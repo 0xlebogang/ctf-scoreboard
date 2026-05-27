@@ -1,0 +1,221 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Typography } from "antd";
+import { Trophy, TrendingUp, TrendingDown } from "lucide-react";
+import type { Team } from "@/utils/constants";
+
+const { Text } = Typography;
+
+export default function LeaderboardRow({
+	team,
+	index,
+	isScoring,
+	lastPoints,
+	rankChange,
+	topScore,
+	teamColor,
+}: {
+	team: Team;
+	index: number;
+	isScoring: boolean;
+	lastPoints: number;
+	rankChange: "up" | "down" | "same" | undefined;
+	topScore: number;
+	teamColor: string;
+}) {
+	const barPercent = (team.score / topScore) * 100;
+
+	return (
+		<motion.div
+			layout
+			initial={{ opacity: 0, y: 24 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{
+				layout: { type: "spring", stiffness: 180, damping: 24 },
+			}}
+			style={{ marginBottom: 8, position: "relative" }}
+		>
+			<motion.div
+				animate={{
+					width: `${barPercent}%`,
+					backgroundColor: isScoring
+						? `${teamColor}44`
+						: "rgba(255,255,255,0.04)",
+				}}
+				transition={{ duration: 0.6, ease: "easeOut" }}
+				style={{
+					position: "absolute",
+					inset: 0,
+					borderRadius: 10,
+				}}
+			/>
+
+			<motion.div
+				animate={
+					isScoring
+						? {
+								scale: [1, 1.04, 1],
+								boxShadow: [
+									"0 0 0 transparent",
+									`0 0 40px ${teamColor}66`,
+									"0 0 0 transparent",
+								],
+							}
+						: { scale: 1, boxShadow: "0 0 0 transparent" }
+				}
+				transition={{
+					duration: 1.2,
+					ease: "easeOut",
+					times: [0, 0.3, 1],
+				}}
+				style={{
+					display: "flex",
+					alignItems: "center",
+					padding: "14px 20px",
+					borderRadius: 10,
+					border: "1px solid",
+					borderColor: isScoring
+						? `${teamColor}88`
+						: "rgba(255, 255, 255, 0.06)",
+					backgroundColor: isScoring
+						? `${teamColor}18`
+						: "rgba(255, 255, 255, 0.03)",
+					transition: "background-color 0.3s, border-color 0.3s",
+				}}
+			>
+				<div style={{ width: 44, textAlign: "center", flexShrink: 0 }}>
+					{index === 0 && (
+						<motion.div
+							animate={{
+								rotate: [0, -10, 10, -10, 0],
+								scale: [1, 1.15, 1],
+							}}
+							transition={{
+								duration: 0.6,
+								repeat: Number.POSITIVE_INFINITY,
+								repeatDelay: 4,
+							}}
+						>
+							<Trophy size={18} color="#ffd700" />
+						</motion.div>
+					)}
+					{index === 1 && <Trophy size={18} color="#c0c0c0" />}
+					{index === 2 && <Trophy size={18} color="#cd7f32" />}
+					{index > 2 && (
+						<Text
+							style={{
+								color: "rgba(255,255,255,0.25)",
+								fontFamily: "monospace",
+								fontSize: 13,
+							}}
+						>
+							#{index + 1}
+						</Text>
+					)}
+				</div>
+
+				<div
+					style={{
+						flex: 1,
+						display: "flex",
+						alignItems: "center",
+						gap: 12,
+					}}
+				>
+					<motion.div
+						animate={{
+							boxShadow: isScoring
+								? `0 0 24px ${teamColor}, 0 0 60px ${teamColor}44`
+								: "0 0 0 transparent",
+						}}
+						transition={{ duration: 0.3 }}
+						style={{
+							width: 10,
+							height: 10,
+							borderRadius: "50%",
+							backgroundColor: teamColor,
+							flexShrink: 0,
+						}}
+					/>
+					<motion.span
+						animate={{
+							color: isScoring
+								? teamColor
+								: "rgba(255,255,255,0.9)",
+						}}
+						transition={{ duration: 0.3 }}
+						style={{ fontFamily: "monospace", fontSize: 15 }}
+					>
+						{team.name}
+					</motion.span>
+					{rankChange === "up" && (
+						<motion.div initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+							<TrendingUp size={14} color="#52c41a" />
+						</motion.div>
+					)}
+					{rankChange === "down" && (
+						<motion.div initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+							<TrendingDown size={14} color="#ff4d4f" />
+						</motion.div>
+					)}
+				</div>
+
+				<div style={{ position: "relative", textAlign: "right" }}>
+					<motion.span
+						key={team.score}
+						initial={
+							isScoring
+								? { scale: 1.6, color: "#52c41a" }
+								: undefined
+						}
+						animate={{ scale: 1, color: "#fff" }}
+						transition={{
+							type: "spring",
+							stiffness: 350,
+							damping: 10,
+						}}
+						style={{
+							fontFamily: "monospace",
+							fontSize: 18,
+							fontWeight: 700,
+						}}
+					>
+						{team.score.toLocaleString()}
+					</motion.span>
+					<Text
+						style={{
+							color: "rgba(255,255,255,0.3)",
+							fontFamily: "monospace",
+							fontSize: 12,
+							marginLeft: 4,
+						}}
+					>
+						pts
+					</Text>
+
+					{isScoring && (
+						<motion.div
+							initial={{ opacity: 1, y: 0, x: 0 }}
+							animate={{ opacity: 0, y: -32, x: 8 }}
+							transition={{ duration: 1.8, ease: "easeOut" }}
+							style={{
+								position: "absolute",
+								top: -24,
+								right: 0,
+								color: "#52c41a",
+								fontFamily: "monospace",
+								fontWeight: 700,
+								fontSize: 20,
+								pointerEvents: "none",
+								textShadow: "0 0 12px rgba(82,196,26,0.6)",
+							}}
+						>
+							+{lastPoints}
+						</motion.div>
+					)}
+				</div>
+			</motion.div>
+		</motion.div>
+	);
+}
