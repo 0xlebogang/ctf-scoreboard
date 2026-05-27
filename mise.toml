@@ -1,0 +1,5 @@
+[env]
+NODE_ENV = "production"
+
+[tools]
+bun = "1.3.14"
