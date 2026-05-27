@@ -57,6 +57,6 @@ A simple scoreboard built for the flash of being at the ITWeb Security Summit Ha
 
 <div align="center">
     <small>Built by:</small>
-    <a href="https://lebophoshoko.dedyn.io">Lebogang Phoshoko</a>
+    <a href="https://lebophoshoko.dedyn.io">Lebogang Phoshoko</a><br />
     <a href="https://lethabomaepa.netlify.app">Lethabo Maepa</a>
 </div>
