@@ -1,65 +1,189 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Typography } from "antd";
+import { motion } from "framer-motion";
+import {
+	INITIAL_TEAMS,
+	TEAM_COLORS,
+	SCORE_POINTS,
+	type Team,
+	type Burst,
+} from "@/utils/constants";
+import Confetti from "@/components/Confetti";
+import ScoreAnnouncement, {
+	ScoreFlash,
+} from "@/components/ScoreAnnouncement";
+import ScoreboardHeader from "@/components/ScoreboardHeader";
+import LeaderboardRow from "@/components/LeaderboardRow";
+
+const { Text } = Typography;
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+	const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
+	const [scoringTeamId, setScoringTeamId] = useState<string | null>(null);
+	const [lastPoints, setLastPoints] = useState(0);
+	const [lastEvent, setLastEvent] = useState<{
+		name: string;
+		points: number;
+	} | null>(null);
+	const [mounted, setMounted] = useState(false);
+	const [prevOrder, setPrevOrder] = useState<string[]>([]);
+	const [burst, setBurst] = useState<Burst | null>(null);
+	const burstIdRef = useRef(0);
+
+	useEffect(() => {
+		setMounted(true);
+		const saved = localStorage.getItem("ctf-scores");
+		if (saved) {
+			try {
+				setTeams(JSON.parse(saved));
+			} catch {
+				/* ignore */
+			}
+		}
+	}, []);
+
+	useEffect(() => {
+		if (mounted) {
+			localStorage.setItem("ctf-scores", JSON.stringify(teams));
+		}
+	}, [teams, mounted]);
+
+	const addScore = useCallback(() => {
+		setTeams((prev) => {
+			const idx = Math.floor(Math.random() * prev.length);
+			const points =
+				SCORE_POINTS[Math.floor(Math.random() * SCORE_POINTS.length)];
+			const next = prev.map((t) => ({ ...t }));
+			next[idx] = { ...next[idx], score: next[idx].score + points };
+
+			const teamId = next[idx].id;
+			const teamColor = TEAM_COLORS[teamId];
+
+			setScoringTeamId(teamId);
+			setLastPoints(points);
+			setLastEvent({ name: next[idx].name, points });
+
+			burstIdRef.current += 1;
+			setBurst({
+				id: burstIdRef.current,
+				teamName: next[idx].name,
+				teamColor,
+				points,
+			});
+
+			setTimeout(() => {
+				setScoringTeamId(null);
+				setLastEvent(null);
+				setBurst(null);
+			}, 2500);
+
+			return next;
+		});
+	}, []);
+
+	useEffect(() => {
+		if (!mounted) return;
+		const delay = 3000 + Math.random() * 5000;
+		const timer = setTimeout(addScore, delay);
+		return () => clearTimeout(timer);
+	}, [addScore, mounted]);
+
+	const reset = () => {
+		setTeams(INITIAL_TEAMS.map((t) => ({ ...t, score: 0 })));
+		setLastEvent(null);
+		setScoringTeamId(null);
+		setPrevOrder([]);
+		setBurst(null);
+		burstIdRef.current = 0;
+		localStorage.removeItem("ctf-scores");
+	};
+
+	const sorted = [...teams].sort((a, b) => b.score - a.score);
+	const sortedIds = sorted.map((t) => t.id);
+
+	useEffect(() => {
+		if (mounted) {
+			setPrevOrder(sortedIds);
+		}
+	}, [teams, mounted]);
+
+	const rankChanges = new Map<string, "up" | "down" | "same">();
+	if (prevOrder.length > 0) {
+		for (const team of sorted) {
+			const prevIdx = prevOrder.indexOf(team.id);
+			const currIdx = sortedIds.indexOf(team.id);
+			if (prevIdx > currIdx) rankChanges.set(team.id, "up");
+			else if (prevIdx < currIdx) rankChanges.set(team.id, "down");
+			else rankChanges.set(team.id, "same");
+		}
+	}
+
+	const topScore = sorted[0]?.score || 1;
+
+	return (
+		<>
+			<Confetti burst={burst} />
+			<ScoreFlash burst={burst} />
+			<ScoreAnnouncement burst={burst} />
+
+			<div
+				style={{
+					minHeight: "100vh",
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					padding: "2rem 1rem",
+					position: "relative",
+				}}
+			>
+				<div style={{ width: "100%", maxWidth: 720 }}>
+					<ScoreboardHeader lastEvent={lastEvent} onReset={reset} />
+
+					{sorted.map((team, index) => (
+						<LeaderboardRow
+							key={team.id}
+							team={team}
+							index={index}
+							isScoring={scoringTeamId === team.id}
+							lastPoints={lastPoints}
+							rankChange={rankChanges.get(team.id)}
+							topScore={topScore}
+							teamColor={TEAM_COLORS[team.id]}
+						/>
+					))}
+
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.5 }}
+						style={{
+							textAlign: "center",
+							marginTop: 32,
+							padding: "16px 0",
+							borderTop: "1px solid rgba(255,255,255,0.06)",
+						}}
+					>
+						<Text
+							style={{
+								color: "rgba(255,255,255,0.3)",
+								fontFamily: "monospace",
+								fontSize: 12,
+							}}
+						>
+							Total flags captured:{" "}
+							{teams
+								.reduce((s, t) => s + t.score, 0)
+								.toLocaleString()}{" "}
+							pts | Leading:{" "}
+							<span style={{ color: TEAM_COLORS[sorted[0]?.id] }}>
+								{sorted[0]?.name}
+							</span>
+						</Text>
+					</motion.div>
+				</div>
+			</div>
+		</>
+	);
 }
