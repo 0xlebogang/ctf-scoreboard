@@ -140,7 +140,10 @@ export default function Home() {
 				}}
 			>
 				<div style={{ width: "100%", maxWidth: 560 }}>
-					<ScoreboardHeader lastEvent={lastEvent} onReset={reset} />
+					<ScoreboardHeader
+						category="Blue"
+						lastEvent={lastEvent}
+					/>
 
 					{sorted.map((team, index) => (
 						<LeaderboardRow
@@ -186,9 +189,7 @@ export default function Home() {
 				</div>
 
 				<div style={{ width: "100%", maxWidth: 560 }}>
-					<ScoreboardHeader lastEvent={lastEvent} onReset={reset} />
-
-					<Title></Title>
+					<ScoreboardHeader category="Red" lastEvent={lastEvent} onReset={reset} />
 
 					{sorted.map((team, index) => (
 						<LeaderboardRow

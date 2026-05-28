@@ -12,11 +12,13 @@ interface Event {
 }
 
 export default function ScoreboardHeader({
+	category,
 	lastEvent,
 	onReset,
 }: {
+	category: "Blue" | "Red"
 	lastEvent: Event | null;
-	onReset: () => void;
+	onReset?: () => void;
 }) {
 	return (
 		<>
@@ -42,9 +44,9 @@ export default function ScoreboardHeader({
 							ease: "easeInOut",
 						}}
 					>
-						{">"}
+						{">_"}
 					</motion.span>{" "}
-					CTF_SCOREBOARD
+					{category} Team
 				</Title>
 				<Text
 					type="secondary"
@@ -55,7 +57,7 @@ export default function ScoreboardHeader({
 						display: "block",
 					}}
 				>
-					Live standings — automated flag capture simulation
+					{category === "Blue" ? "THE DEFENDERS" : "THE PREDATORS"}
 				</Text>
 			</motion.div>
 
@@ -114,14 +116,18 @@ export default function ScoreboardHeader({
 						</motion.div>
 					)}
 				</motion.div>
-				<Button
-					icon={<RotateCcw size={14} />}
-					size="small"
-					onClick={onReset}
-					ghost
-				>
-					Reset
-				</Button>
+
+				{onReset ? (
+						<Button
+							icon={<RotateCcw size={14} />}
+							size="small"
+							onClick={onReset}
+							ghost
+						>
+							Reset
+						</Button>
+					) : null
+				}
 			</div>
 		</>
 	);
