@@ -17,7 +17,7 @@ import ScoreAnnouncement, {
 import ScoreboardHeader from "@/components/ScoreboardHeader";
 import LeaderboardRow from "@/components/LeaderboardRow";
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
 export default function Home() {
 	const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
@@ -132,14 +132,63 @@ export default function Home() {
 				style={{
 					minHeight: "100vh",
 					display: "flex",
-					flexDirection: "column",
 					alignItems: "center",
+					justifyContent: "center",
+					gap: "10rem",
 					padding: "2rem 1rem",
 					position: "relative",
 				}}
 			>
-				<div style={{ width: "100%", maxWidth: 720 }}>
+				<div style={{ width: "100%", maxWidth: 560 }}>
 					<ScoreboardHeader lastEvent={lastEvent} onReset={reset} />
+
+					{sorted.map((team, index) => (
+						<LeaderboardRow
+							key={team.id}
+							team={team}
+							index={index}
+							isScoring={scoringTeamId === team.id}
+							lastPoints={lastPoints}
+							rankChange={rankChanges.get(team.id)}
+							topScore={topScore}
+							teamColor={TEAM_COLORS[team.id]}
+						/>
+					))}
+
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.5 }}
+						style={{
+							textAlign: "center",
+							marginTop: 32,
+							padding: "16px 0",
+							borderTop: "1px solid rgba(255,255,255,0.06)",
+						}}
+					>
+						<Text
+							style={{
+								color: "rgba(255,255,255,0.3)",
+								fontFamily: "monospace",
+								fontSize: 12,
+							}}
+						>
+							Total flags captured:{" "}
+							{teams
+								.reduce((s, t) => s + t.score, 0)
+								.toLocaleString()}{" "}
+							pts | Leading:{" "}
+							<span style={{ color: TEAM_COLORS[sorted[0]?.id] }}>
+								{sorted[0]?.name}
+							</span>
+						</Text>
+					</motion.div>
+				</div>
+
+				<div style={{ width: "100%", maxWidth: 560 }}>
+					<ScoreboardHeader lastEvent={lastEvent} onReset={reset} />
+
+					<Title></Title>
 
 					{sorted.map((team, index) => (
 						<LeaderboardRow
