@@ -12,11 +12,13 @@ interface Event {
 }
 
 export default function ScoreboardHeader({
+	category,
 	lastEvent,
 	onReset,
 }: {
+	category: "Blue" | "Red"
 	lastEvent: Event | null;
-	onReset: () => void;
+	onReset?: () => void;
 }) {
 	return (
 		<>
@@ -32,6 +34,9 @@ export default function ScoreboardHeader({
 						fontFamily: "monospace",
 						letterSpacing: 6,
 						fontSize: 28,
+						// TODO(Lethabo): use "blue" and "red" colors that align
+						// with out colorscheme if any
+						color: category === "Blue" ? "blue" : "red"
 					}}
 				>
 					<motion.span
@@ -42,20 +47,20 @@ export default function ScoreboardHeader({
 							ease: "easeInOut",
 						}}
 					>
-						{">"}
+						{">_"}
 					</motion.span>{" "}
-					CTF_SCOREBOARD
+					{category} Team
 				</Title>
 				<Text
 					type="secondary"
 					style={{
 						fontFamily: "monospace",
-						fontSize: 13,
+						fontSize: 16,
 						marginTop: 4,
 						display: "block",
 					}}
 				>
-					Live standings — automated flag capture simulation
+					{category === "Blue" ? "THE DEFENDERS" : "THE PREDATORS"}
 				</Text>
 			</motion.div>
 
@@ -114,14 +119,18 @@ export default function ScoreboardHeader({
 						</motion.div>
 					)}
 				</motion.div>
-				<Button
-					icon={<RotateCcw size={14} />}
-					size="small"
-					onClick={onReset}
-					ghost
-				>
-					Reset
-				</Button>
+
+				{onReset ? (
+						<Button
+							icon={<RotateCcw size={14} />}
+							size="small"
+							onClick={onReset}
+							ghost
+						>
+							Reset
+						</Button>
+					) : null
+				}
 			</div>
 		</>
 	);
