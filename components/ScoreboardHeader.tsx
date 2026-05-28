@@ -36,7 +36,7 @@ export default function ScoreboardHeader({
 						fontSize: 28,
 						// TODO(Lethabo): use "blue" and "red" colors that align
 						// with out colorscheme if any
-						color: category === "Blue" ? "blue" : "AccentColor"
+						color: category === "Blue" ? "blue" : "red"
 					}}
 				>
 					<motion.span
