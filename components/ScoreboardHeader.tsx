@@ -34,6 +34,9 @@ export default function ScoreboardHeader({
 						fontFamily: "monospace",
 						letterSpacing: 6,
 						fontSize: 28,
+						// TODO(Lethabo): use "blue" and "red" colors that align
+						// with out colorscheme if any
+						color: category === "Blue" ? "blue" : "AccentColor"
 					}}
 				>
 					<motion.span
@@ -52,7 +55,7 @@ export default function ScoreboardHeader({
 					type="secondary"
 					style={{
 						fontFamily: "monospace",
-						fontSize: 13,
+						fontSize: 16,
 						marginTop: 4,
 						display: "block",
 					}}
